@@ -1,23 +1,31 @@
 version: 0.1
 
-environment_variables:
-  plaintext:
-    JAVA_HOME: "/usr/lib/jvm/java-8-openjdk-amd64"
-
 phases:
   install:
     commands:
-      - echo install...
+      - echo ### install maven ###
+      - apt-get update -y
+      - apt-get install -y software-properties-common
+      - which add-apt-repository
+      - add-apt-repository -y ppa:webupd8team/java
+      - apt-get update -y
+      - echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+      - apt-get install -y  oracle-java8-installer
+      - apt-get install -y maven
   pre_build:
     commands:
-      - echo Nothing to do in the pre_build phase...
+      - echo Logging in to Amazon ECR..
+      - $(aws ecr get-login --region us-west-2)
   build:
     commands:
-      - echo Build started on `date`
+      - echo ##### mvn install ####
+      - mvn install -X
+      - ls -l
+      - ls target/ -l
+      - echo #### docker build ####
+      - docker build -t centos .
+      - docker tag centos:latest 282874131478.dkr.ecr.us-west-2.amazonaws.com/centos:latest
   post_build:
     commands:
-      - echo Build completed on `date`
-artifacts:
-  files:
-    - target/generator.jar
-  discard-paths: yes
+      - echo #### docker push ####
+      - docker push 282874131478.dkr.ecr.us-west-2.amazonaws.com/centos:latest
