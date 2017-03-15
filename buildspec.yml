@@ -19,8 +19,7 @@ phases:
   build:
     commands:
       - echo ##### mvn install ####
-      - mvn install
-      - mvn -e
+      - mvn install -X
       - echo #### docker build ####
       - docker build -t centos .
       - docker tag centos:latest 282874131478.dkr.ecr.us-west-2.amazonaws.com/centos:latest
